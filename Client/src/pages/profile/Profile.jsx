@@ -9,58 +9,73 @@ import LanguageIcon from "@mui/icons-material/Language";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Posts from "../../components/posts/Posts";
+import { useQuery } from "@tanstack/react-query";
+import { makeRequest } from "../../axios";
+import { useLocation } from "react-router-dom";
+import { AuthContext } from "../../context/authContext";
+import { useContext } from "react";
 const Profile = () => {
+  const { currentUser } = useContext(AuthContext);
+  const userId = useLocation().pathname.split("/")[2];
+  const { isLoading, error, data } = useQuery({
+    queryKey: ["user"],
+    queryFn: () =>
+      makeRequest.get("/users/find/" + userId).then((res) => res.data),
+  });
+  console.log(data);
   return (
     <div className="profile">
-      <div className="images">
-        <img
-          src="https://images.pexels.com/photos/13440765/pexels-photo-13440765.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-          alt=""
-          className="cover"
-        />
-        <img
-          src="https://images.pexels.com/photos/14028501/pexels-photo-14028501.jpeg?auto=compress&cs=tinysrgb&w=1600&lazy=load"
-          alt=""
-          className="profilePic"
-        />
-      </div>
-      <div className="profileContainer">
-        <div className="uInfo">
-          <div className="left">
-            <a href="http://facebook.com">
-              <FacebookTwoToneIcon fontSize="large" />
-            </a>
-            <a href="http://twitter.com">
-              <TwitterIcon fontSize="large" />
-            </a>
-            <a href="http://www.linkedin.com">
-              <LinkedInIcon fontSize="large" />
-            </a>
-            <a href="http://www.pinterset.com">
-              <PinterestIcon fontSize="large" />
-            </a>
+      {isLoading ? (
+        "Loading"
+      ) : (
+        <>
+          <div className="images">
+            <img src={data.coverPic} alt="" className="cover" />
+            <img src={data.profilePic} alt="" className="profilePic" />
           </div>
-          <div className="center">
-            <span>Jane Doe</span>
-            <div className="info">
-              <div className="item">
-                <PlaceIcon />
-                <span>USA</span>
+          <div className="profileContainer">
+            <div className="uInfo">
+              <div className="left">
+                <a href="http://facebook.com">
+                  <FacebookTwoToneIcon fontSize="large" />
+                </a>
+                <a href="http://twitter.com">
+                  <TwitterIcon fontSize="large" />
+                </a>
+                <a href="http://www.linkedin.com">
+                  <LinkedInIcon fontSize="large" />
+                </a>
+                <a href="http://www.pinterset.com">
+                  <PinterestIcon fontSize="large" />
+                </a>
               </div>
-              <div className="item">
-                <LanguageIcon />
-                <span>Echoo</span>
+              <div className="center">
+                <span>{data.name}</span>
+                <div className="info">
+                  <div className="item">
+                    <PlaceIcon />
+                    <span>{data.city}</span>
+                  </div>
+                  <div className="item">
+                    <LanguageIcon />
+                    <span>Echoo</span>
+                  </div>
+                </div>
+                {userId === currentUser.id ? (
+                  <button>Update</button>
+                ) : (
+                  <button>Follow</button>
+                )}
+              </div>
+              <div className="right">
+                <EmailOutlinedIcon />
+                <MoreVertIcon />
               </div>
             </div>
-            <button>Follow</button>
+            <Posts />
           </div>
-          <div className="right">
-            <EmailOutlinedIcon />
-            <MoreVertIcon />
-          </div>
-        </div>
-        <Posts />
-      </div>
+        </>
+      )}
     </div>
   );
 };
